@@ -91,7 +91,7 @@ export default {
     }
   },
   beforeMount() {
-    if (this.$root.$data.username) this.$router.push('/about')
+    if (this.$root.$data.username) this.$router.push('/chat')
   }
 }
 </script>
