@@ -12,7 +12,7 @@
           <ul>
             <li
               v-for="user in Object.keys(users)"
-              @click="setSelectedUID(user)"
+              @click="setSelectedUID(user === selectedUID ? '' : user)"
               :key="user"
               :class="{
                 [user]: true,
@@ -40,11 +40,11 @@
         </div>
         <div class="chat-window">
           <div class="messages">
-            <ul ref="msgCtnRef">
-              <li v-for="message in messages" :key="message.key">
+            <ul ref="msgCtnRef" v-on:scroll="handleScroll">
+              <li v-for="message in messages" :key="message.key + message.uid">
                 <MessageBubble
                   :uid="message.uid"
-                  :username="users[message.uid].name"
+                  :username="message.username"
                   :message="message.message"
                   :sentAt="message.sentAt"
                   :placement="message.uid === socket.id ? 'right' : 'left'"
@@ -89,7 +89,8 @@ export default {
       messages: [],
       total: 0,
       message: '',
-      selectedUID: ''
+      selectedUID: '',
+      nearlyBottom: true
     }
   },
   methods: {
@@ -98,8 +99,23 @@ export default {
         timestamp
       ).toLocaleTimeString()}`
     },
+    handleScroll() {
+      const { msgCtnRef } = this.$refs
+      if (msgCtnRef.scrollTop === 0 && this.total > this.messages.length) {
+        this.socket.emit(MESSAGES, { offset: this.messages.length, limit: 10 })
+        msgCtnRef.scrollTop = msgCtnRef.scrollTop + 400
+      }
+
+      if (msgCtnRef.scrollHeight - msgCtnRef.offsetHeight - msgCtnRef.scrollTop < 100) {
+        this.nearlyBottom = true
+      } else {
+        this.nearlyBottom = false
+      }
+    },
     scrollToEnd() {
-      this.$refs.msgCtnRef.scrollTo(0, this.$refs.msgCtnRef.scrollHeight + 35)
+      if (this.$refs.msgCtnRef?.scrollTo) {
+        this.$refs.msgCtnRef.scrollTo(0, 1000000)
+      }
     },
     setSelectedUID(uid) {
       this.selectedUID = uid
@@ -116,7 +132,7 @@ export default {
   },
   mounted() {
     if (this.$root.$data.username) {
-      const socket = io('http://localhost:4000', { path: '/chat' })
+      const socket = io('http://localhost:4000', { path: '/chat', reconnection: false })
 
       socket.on('connect', () => {
         this.socket = socket
@@ -132,21 +148,33 @@ export default {
         // Get messages
         socket.emit(MESSAGES, { offset: this.messages.length, limit: 10 })
         socket.on(MESSAGES, ({ messages, total }) => {
-          this.messages = messages
+          if (!this.messages.length) setTimeout(this.scrollToEnd, 0)
+          this.messages = [...messages, ...this.messages]
           this.total = total
         })
 
         socket.on(MESSAGE, (message) => {
+          if (message.uid === this.socket.id || this.nearlyBottom) setTimeout(this.scrollToEnd, 0)
           this.messages.push(message)
           this.total += 1
+        })
+
+        // socket.on('reconnect', () => {
+        //   socket.emit(USER_LIST)
+        //   socket.emit(MESSAGES, { offset: this.messages.length, limit: 10 })
+        // })
+
+        socket.on('connect_error', () => {
+          this.$router.push('/notfound')
+        })
+
+        socket.on('disconnect', () => {
+          this.$router.push('/notfound')
         })
       })
     }
   },
   watch: {
-    'messages.length'(newL, oldL) {
-      if (newL > oldL) setTimeout(this.scrollToEnd, 0)
-    },
     selectedUID(newS) {
       if (newS) {
         const el = this.$el.getElementsByClassName(newS)[0]
@@ -358,6 +386,7 @@ export default {
             height: 100%;
             overflow-y: auto;
             scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
 
             > li {
               width: 100%;
