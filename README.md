@@ -4,6 +4,10 @@ Chat web application with implementation of [VueJS](https://vuejs.org/)
 
 Backend can be found [here](https://github.com/lPaths/node-chat)
 
+## Demo
+
+https://p-vue-chat.surge.sh/
+
 ## Project setup
 
 ```bash
