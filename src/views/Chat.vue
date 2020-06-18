@@ -132,7 +132,10 @@ export default {
   },
   mounted() {
     if (this.$root.$data.username) {
-      const socket = io('http://localhost:4000', { path: '/chat', reconnection: false })
+      const socket = io(process.env.VUE_APP_BACKEND_URL, {
+        path: '/chat',
+        reconnection: false
+      })
 
       socket.on('connect', () => {
         this.socket = socket
