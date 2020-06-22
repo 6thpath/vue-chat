@@ -5,11 +5,14 @@
         <span class="bullet red" />
         <span class="bullet orange" />
         <span class="bullet green" />
-        <span class="address-bar"><span class="scheme">https://</span>vue-chat.com </span>
+        <span class="address-bar">
+          <span class="scheme">https://</span>github.com/lPaths/vue-chat
+        </span>
       </div>
       <div class="body">
-        <div class="user-list">
-          <ul>
+        <div class="left-section">
+          <ul class="user-list">
+            <li v-show="loading">Loading...</li>
             <li
               v-for="user in Object.keys(users)"
               @click="setSelectedUID(user === selectedUID ? '' : user)"
@@ -17,19 +20,19 @@
               :class="{
                 [user]: true,
                 active: selectedUID === user,
-                unselectable: user === socket.id
+                unselectable: user === socket.id,
               }"
               :title="
                 users[user].leftAt
-                  ? 'Left at ' + convertTimestamp(users[user].leftAt)
-                  : 'Joined at ' + convertTimestamp(users[user].joinedAt)
+                  ? `Left at ${convertTimestamp(users[user].leftAt)}`
+                  : `Joined at ${convertTimestamp(users[user].joinedAt)}`
               "
             >
               <span
                 class="status"
                 :class="{
                   on: typeof users[user].online === 'boolean' && users[user].online,
-                  off: !users[user].online
+                  off: !users[user].online,
                 }"
               />
               <span class="username"
@@ -38,22 +41,23 @@
             </li>
           </ul>
         </div>
-        <div class="chat-window">
-          <div class="messages">
-            <ul ref="msgCtnRef" v-on:scroll="handleScroll">
-              <li v-for="message in messages" :key="message.key + message.uid">
-                <MessageBubble
-                  :uid="message.uid"
-                  :username="message.username"
-                  :message="message.message"
-                  :sentAt="message.sentAt"
-                  :placement="message.uid === socket.id ? 'right' : 'left'"
-                  :setSelectedUID="setSelectedUID"
-                  :selectedUID="selectedUID"
-                />
-              </li>
-            </ul>
-          </div>
+
+        <div class="right-section">
+          <ul ref="msgCtnRef" class="message-box" v-on:scroll="handleScroll">
+            <li v-show="loading">Loading...</li>
+            <li v-for="message in messages" :key="message.key + message.uid">
+              <MessageBubble
+                :uid="message.uid"
+                :username="message.username"
+                :message="message.message"
+                :sentAt="message.sentAt"
+                :placement="message.uid === socket.id ? 'right' : 'left'"
+                :setSelectedUID="setSelectedUID"
+                :selectedUID="selectedUID"
+              />
+            </li>
+          </ul>
+
           <form class="message-input" v-on:submit="send">
             <input class="primary" v-model="message" placeholder="Type a message..." autofocus />
             <button class="primary" type="submit" :disabled="!message.trim().length">
@@ -80,17 +84,18 @@ const MESSAGES = 'messages'
 export default {
   name: 'Chat',
   components: {
-    MessageBubble
+    MessageBubble,
   },
   data() {
     return {
+      loading: true,
       socket: null,
       users: {},
       messages: [],
       total: 0,
       message: '',
       selectedUID: '',
-      nearlyBottom: true
+      nearlyBottom: true,
     }
   },
   methods: {
@@ -100,17 +105,19 @@ export default {
       ).toLocaleTimeString()}`
     },
     handleScroll() {
-      const { msgCtnRef } = this.$refs
-      if (msgCtnRef.scrollTop === 0 && this.total > this.messages.length) {
+      const {
+        msgCtnRef,
+        msgCtnRef: { scrollTop, offsetHeight, scrollHeight },
+      } = this.$refs
+
+      if (scrollTop === 0 && this.total > this.messages.length) {
         this.socket.emit(MESSAGES, { offset: this.messages.length, limit: 10 })
-        msgCtnRef.scrollTop = msgCtnRef.scrollTop + 400
+        msgCtnRef.scrollTop = scrollTop + 400
       }
 
-      if (msgCtnRef.scrollHeight - msgCtnRef.offsetHeight - msgCtnRef.scrollTop < 100) {
+      if (scrollHeight - offsetHeight - scrollTop < 100) {
         this.nearlyBottom = true
-      } else {
-        this.nearlyBottom = false
-      }
+      } else this.nearlyBottom = false
     },
     scrollToEnd() {
       if (this.$refs.msgCtnRef?.scrollTo) {
@@ -125,7 +132,7 @@ export default {
 
       this.socket.emit(MESSAGE, { message: this.message, key: +new Date() })
       this.message = ''
-    }
+    },
   },
   beforeMount() {
     if (!this.$root.$data.username) this.$router.push('/')
@@ -134,10 +141,11 @@ export default {
     if (this.$root.$data.username) {
       const socket = io(process.env.VUE_APP_BACKEND_URL, {
         path: '/chat',
-        reconnection: false
+        reconnection: false,
       })
 
       socket.on('connect', () => {
+        this.loading = false
         this.socket = socket
         // Set name
         socket.emit(SET_NAME, this.$root.$data.username)
@@ -180,11 +188,11 @@ export default {
   watch: {
     selectedUID(newS) {
       if (newS) {
-        const el = this.$el.getElementsByClassName(newS)[0]
-        el.scrollIntoView()
+        const elm = this.$el.getElementsByClassName(newS)[0]
+        if (elm) elm.scrollIntoView()
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -201,17 +209,9 @@ export default {
   justify-content: center;
   align-items: center;
 
-  h2 {
-    width: 500px;
-    background: @white;
-    border: 1px solid @black;
-    border-radius: 5px;
-    text-align: center;
-  }
-
   .main {
-    width: 500px;
-    height: 400px;
+    width: 600px;
+    height: 500px;
     background: @white;
     border: 1px solid @grey;
     border-radius: 8px;
@@ -220,6 +220,14 @@ export default {
 
     display: flex;
     flex-direction: column;
+
+    @media screen and (max-width: 600px) {
+      width: 96%;
+    }
+
+    @media screen and (max-height: 500px) {
+      height: 90%;
+    }
 
     .header {
       width: 100%;
@@ -266,7 +274,9 @@ export default {
 
       .address-bar {
         cursor: text;
-        width: 60%;
+
+        max-width: 60%;
+        min-width: 210px;
         background: @white;
         border: 1px solid transparent;
         border-radius: 4px;
@@ -288,21 +298,22 @@ export default {
     }
 
     .body {
+      width: 100%;
       height: ~'calc(100% - 35px)';
 
       display: flex;
 
-      .user-list,
-      .chat-window {
+      .left-section,
+      .right-section {
         height: 100%;
       }
 
-      .user-list {
+      .left-section {
         width: 30%;
         padding: 5px 0 5px 5px;
         border-right: 2px solid @l-grey;
 
-        ul {
+        .user-list {
           width: 100%;
           height: 100%;
           scroll-behavior: smooth;
@@ -324,7 +335,7 @@ export default {
             font-size: 14px;
             border-radius: 3px;
             padding: 2px 4px;
-            margin-bottom: 3px;
+            margin: 0 0 3px 0;
             overflow-x: hidden;
             transition: all 0.3s;
 
@@ -377,28 +388,23 @@ export default {
         }
       }
 
-      .chat-window {
+      .right-section {
         width: 70%;
 
-        > .messages {
+        > .message-box {
           width: 100%;
           height: ~'calc(100% - 30px)';
+          overflow-y: auto;
+          scroll-behavior: smooth;
+          scroll-snap-type: y mandatory;
 
-          > ul {
+          > li {
             width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-            scroll-snap-type: y mandatory;
+            position: relative;
+            padding: 3px 4px;
+            margin: 3px 0;
 
-            > li {
-              width: 100%;
-              position: relative;
-              padding: 3px 4px;
-              margin: 3px 0;
-
-              float: left;
-            }
+            float: left;
           }
         }
 

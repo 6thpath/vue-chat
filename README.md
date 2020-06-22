@@ -28,18 +28,6 @@ yarn serve
 yarn build
 ```
 
-### Run your unit tests
-
-```bash
-yarn test:unit
-```
-
-### Run your end-to-end tests
-
-```bash
-yarn test:e2e
-```
-
 ### Lints and fixes files
 
 ```bash

@@ -10,32 +10,32 @@ const routes = [
     path: '/',
     name: 'Home',
     meta: {
-      title: 'Home Page'
+      title: 'Home Page',
     },
-    component: Home
+    component: Home,
   },
   {
     path: '/chat',
     name: 'Chat',
     meta: {
-      title: 'Chat'
+      title: 'Chat',
     },
-    component: () => import(/* webpackChunkName: "chat" */ '../views/Chat.vue')
+    component: () => import(/* webpackChunkName: "chat" */ '../views/Chat.vue'),
   },
   {
     path: '*',
     name: 'NotFound',
     meta: {
-      title: '404'
+      title: '404',
     },
-    component: () => import(/* webpackChunkName: "notfound" */ '../views/NotFound.vue')
-  }
+    component: () => import(/* webpackChunkName: "notfound" */ '../views/NotFound.vue'),
+  },
 ]
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes
+  routes,
 })
 
 router.beforeEach((to, from, next) => {

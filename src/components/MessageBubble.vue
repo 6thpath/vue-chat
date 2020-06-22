@@ -21,7 +21,7 @@ export default {
     sentAt: Number,
     placement: String,
     setSelectedUID: Function,
-    selectedUID: String
+    selectedUID: String,
   },
   methods: {
     convertTimestamp(timestamp) {
@@ -31,8 +31,8 @@ export default {
     },
     select(uid) {
       this.setSelectedUID(uid === this.selectedUID ? '' : uid)
-    }
-  }
+    },
+  },
 }
 </script>
 

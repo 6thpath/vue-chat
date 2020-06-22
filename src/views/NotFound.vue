@@ -27,7 +27,7 @@ export default {
     back() {
       if (this.$root.$data.username) this.$router.push('/chat')
       else this.$router.push('/')
-    }
-  }
+    },
+  },
 }
 </script>

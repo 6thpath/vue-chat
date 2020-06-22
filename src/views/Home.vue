@@ -70,7 +70,7 @@ export default {
   data() {
     return {
       error: '',
-      username: ''
+      username: '',
     }
   },
   methods: {
@@ -78,8 +78,8 @@ export default {
       if (this.error) this.error = ''
     },
 
-    submit(evt) {
-      evt.preventDefault()
+    submit(e) {
+      e.preventDefault()
 
       if (!this.username.trim().length) {
         this.error = 'Invalid name'
@@ -88,10 +88,10 @@ export default {
 
       this.$root.setUsername(this.username)
       this.$router.push('/chat')
-    }
+    },
   },
   beforeMount() {
     if (this.$root.$data.username) this.$router.push('/chat')
-  }
+  },
 }
 </script>

@@ -9,13 +9,13 @@ Vue.config.productionTip = false
 
 new Vue({
   data: {
-    username: ''
+    username: '',
   },
   methods: {
     setUsername(username) {
       this.username = username
-    }
+    },
   },
   router,
-  render: (h) => h(App)
+  render: (h) => h(App),
 }).$mount('#app')
