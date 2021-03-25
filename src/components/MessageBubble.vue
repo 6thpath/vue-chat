@@ -40,15 +40,13 @@ export default {
 @import url('../assets/style/variables.less');
 
 .message-bubble {
-  font-size: 13px;
   max-width: 100%;
-  word-break: break-word;
-
   position: relative;
-  padding: 7px;
-  transition: all 0.3s;
-
   display: block;
+  padding: 7px;
+  font-size: 13px;
+  word-break: break-word;
+  transition: all 0.3s;
 
   &.active {
     background: @s-teal !important;
