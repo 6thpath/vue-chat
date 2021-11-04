@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <h2>Page Not Found</h2>
+    <h1>Page Not Found</h1>
 
-    <button class="primary" v-on:click="back">Take me back</button>
+    <button class="primary" v-on:click="goBack">Take me back</button>
   </div>
 </template>
 
@@ -21,13 +21,14 @@
 </style>
 
 <script>
-export default {
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'NotFound',
   methods: {
-    back() {
-      if (this.$root.$data.username) this.$router.push('/chat')
-      else this.$router.push('/')
+    goBack() {
+      this.$router.push(this.$store.state.username ? '/chat' : '/')
     },
   },
-}
+})
 </script>

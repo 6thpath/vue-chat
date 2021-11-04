@@ -7,12 +7,13 @@
         autofocus
         class="username"
         :class="{ primary: !error, danger: error }"
-        ref="usnRef"
+        ref="usernameRef"
         v-model="username"
-        @input="usernameChange"
+        @input="onUsernameChange"
         maxlength="15"
+        minlength="2"
       />
-      <button type="submit" class="primary" :disabled="!!error">Submit</button>
+      <button type="submit" class="primary" :disabled="!!error">Join</button>
     </form>
   </div>
 </template>
@@ -34,7 +35,7 @@
     width: 350px;
     background: @white;
     border-radius: 15px;
-    padding: 10px;
+    padding: 10px 20px;
     box-shadow: 0 0 10px 2px @grey;
 
     display: flex;
@@ -49,8 +50,7 @@
     }
 
     .username {
-      width: 90%;
-      margin: 15px 0 0 0;
+      width: 100%;
 
       &.danger {
         margin-top: 2px;
@@ -74,8 +74,10 @@ export default {
     }
   },
   methods: {
-    usernameChange() {
-      if (this.error) this.error = ''
+    onUsernameChange() {
+      if (this.error) {
+        this.error = ''
+      }
     },
 
     submit(e) {
@@ -83,15 +85,17 @@ export default {
 
       if (!this.username.trim().length) {
         this.error = 'Invalid name'
-        return this.$refs.usnRef.focus()
+        return this.$refs.usernameRef.focus()
       }
 
-      this.$root.setUsername(this.username)
+      this.$store.commit('setUsername', this.username)
       this.$router.push('/chat')
     },
   },
   beforeMount() {
-    if (this.$root.$data.username) this.$router.push('/chat')
+    if (this.$store.state.username) {
+      this.$router.push('/chat')
+    }
   },
 }
 </script>

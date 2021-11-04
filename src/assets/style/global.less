@@ -1,15 +1,20 @@
 button {
-  outline: none;
   cursor: pointer;
+  outline: none;
   border: 1px solid transparent;
   border-radius: 5px;
-  padding: 5px 7px;
+  padding: 6px 18px;
+  line-height: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: @text;
   transition: all 0.3s;
 
   &.primary {
     background: @l-grey;
 
     &:hover {
+      color: @text-hover;
       background: @l-teal !important;
       border-color: @teal !important;
     }
